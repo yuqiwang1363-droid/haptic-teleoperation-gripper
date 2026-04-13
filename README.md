@@ -131,7 +131,9 @@ interface/     # communication protocol
 
 ## Demo
 
-(Add GIF or video here)
+## Demo
+
+[![Demo Video](docs/demo_thumbnail.png)]((https://www.bilibili.com/video/BV1hrQpB5Ezd)) 
 
 ---
 
