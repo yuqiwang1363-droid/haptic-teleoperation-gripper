@@ -130,7 +130,7 @@ interface/     # communication protocol
 ---
 
 ## Demo
-
+click the picture
 [![Demo Video](docs/demo_thumbnail.png)](https://www.bilibili.com/video/BV1hrQpB5Ezd) 
 
 ---
@@ -280,7 +280,8 @@ interface/     # 串口通信协议说明
 
 ### 演示
 
-（可在此添加演示视频或GIF）
+点击照片
+[![Demo Video](docs/demo_thumbnail.png)](https://www.bilibili.com/video/BV1hrQpB5Ezd) 
 
 ---
 
