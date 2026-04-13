@@ -131,9 +131,7 @@ interface/     # communication protocol
 
 ## Demo
 
-## Demo
-
-[![Demo Video](docs/demo_thumbnail.png)]((https://www.bilibili.com/video/BV1hrQpB5Ezd)) 
+[![Demo Video](docs/demo_thumbnail.png)](https://www.bilibili.com/video/BV1hrQpB5Ezd) 
 
 ---
 
