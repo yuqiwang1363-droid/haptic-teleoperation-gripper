@@ -1,44 +1,54 @@
-# Firmware
-
-## Overview
-
-This firmware is implemented on an Arduino microcontroller and is responsible for real-time sensing, data processing, and force-feedback control of the haptic device.
-
-The system reads joint motion from incremental encoders, measures gripper rotation using an AS5600 magnetic sensor, communicates with an external system via serial, and drives a DC motor to render haptic feedback.
+# Firmware / 固件
 
 ---
 
-## Architecture
+## Overview / 项目简介
 
-Although implemented in a single `.ino` file, the firmware is logically organized into modular functional blocks:
+This firmware runs on an Arduino microcontroller and implements real-time sensing, communication, and force-feedback control for the haptic device.
 
-* **Sensing Layer**
+The system reads joint motion from incremental encoders, measures gripper rotation using an AS5600 magnetic sensor, and communicates with an external system via serial. Based on incoming commands, it drives a DC motor to render haptic feedback.
 
-  * Reads joint angles from incremental encoders (Model 3806)
-  * Reads absolute angle from AS5600 sensor (I2C)
+本固件运行在 Arduino 微控制器上，实现触觉设备的实时数据采集、通信以及力反馈控制。
 
-* **State Processing**
-
-  * Converts raw encoder counts into angular values
-  * Computes system state (joint angles and gripper angle)
-
-* **Communication**
-
-  * Sends real-time state data to host system via serial
-  * Receives control parameters (e.g., contact threshold, stiffness)
-
-* **Control**
-
-  * Computes force-feedback command
-  * Drives DC motor using PWM output
+系统通过读取连杆上的增量式编码器获取关节运动信息，通过 AS5600 磁编码器测量夹爪角度，并通过串口与外部系统（如仿真环境）通信，根据接收到的控制指令驱动电机输出力反馈。
 
 ---
 
-## Main Loop Structure
+## Architecture / 系统架构
 
-The firmware follows a structured control loop:
+Although implemented in a single `.ino` file, the firmware is logically organized into several functional modules:
 
-```cpp id="loop_struct"
+尽管代码目前以单个 `.ino` 文件实现，但在逻辑上可划分为以下模块：
+
+* **Sensing（传感层）**
+
+  * Read joint angles from incremental encoders
+  * Read gripper angle from AS5600 (I2C)
+
+* **State Processing（状态处理）**
+
+  * Convert encoder counts to angles
+  * Maintain system state (joint angles + gripper angle)
+
+* **Communication（通信模块）**
+
+  * Send real-time data via serial
+  * Receive control parameters from host
+
+* **Control（控制模块）**
+
+  * Compute force feedback command
+  * Drive DC motor using PWM
+
+---
+
+## Main Loop / 主循环结构
+
+The firmware follows a structured loop:
+
+固件采用结构化循环：
+
+```cpp
 void loop() {
     readEncoders();
     readGripper();
@@ -49,260 +59,119 @@ void loop() {
 }
 ```
 
-This structure separates sensing, processing, communication, and actuation, improving readability and maintainability.
+This structure separates sensing, processing, communication, and actuation.
+
+该结构实现了传感、处理、通信与控制的分层设计。
 
 ---
 
-## Hardware Interface
+## Hardware Interface / 硬件接口
 
-### Incremental Encoders (Model 3806)
+### Incremental Encoders (Model 3806) / 增量式编码器
 
 * Quadrature signals (A/B channels)
 * Used for joint angle measurement
 * High-resolution relative motion tracking
 
-### AS5600 Magnetic Encoder
+用于关节角度测量，通过A/B相实现高分辨率位置跟踪。
+
+---
+
+### AS5600 Magnetic Encoder / 磁编码器
 
 * I2C communication (SDA, SCL)
-* Provides absolute angle measurement (0–360°)
-* Used for gripper rotation sensing
+* Absolute angle measurement (0–360°)
 
-### Motor Driver
+用于夹爪角度测量，提供绝对角度信息。
+
+---
+
+### Motor Driver / 电机驱动
 
 * PWM output for torque control
 * Direction controlled via digital pins
 
+通过PWM控制输出力矩，实现力反馈。
+
 ---
 
-## Serial Communication
+## Serial Communication / 串口通信
 
-### Output (Arduino → Host)
+### Output (Arduino → Host) / 输出
 
-Format:
-
-```id="serial_out"
+```text
 < x, y, alpha >
 ```
 
-* `x, y` → end-effector position (or joint-derived values)
-* `alpha` → gripper angle
+* `x, y`: end-effector position
+* `alpha`: gripper angle
 
 ---
 
-### Input (Host → Arduino)
+### Input (Host → Arduino) / 输入
 
 * Contact threshold
 * Stiffness parameter
 
-Used to compute force feedback.
+用于计算力反馈控制信号。
 
 ---
 
-## Control Logic
+## Control Logic / 控制逻辑
 
 Force feedback is implemented using a simple virtual wall model:
 
-```cpp id="control_model"
+系统采用虚拟墙模型实现力反馈：
+
+```cpp
 float error = contact_angle - alpha;
 float torque = k * error;
 ```
 
-The computed torque is converted to a PWM signal to drive the motor.
+The torque is converted into a PWM signal to drive the motor.
+
+根据误差计算力矩，并转换为PWM信号驱动电机。
 
 ---
 
-## Key Engineering Considerations
+## Key Engineering Issues / 关键工程问题
 
-### Encoder Stability
+### Encoder Drift / 编码器漂移
 
-* Loose mounting caused significant position drift
-* Fixed using rigid mechanical attachment
+* Issue: system failed to return to zero
+* Cause: loose encoder mounting
+* Fix: rigid mounting using screws
 
-### AS5600 Alignment
+---
 
-* Accurate sensing requires proper magnet alignment (1–3 mm gap)
-* Misalignment leads to nonlinear readings
+### AS5600 Alignment / 传感器对齐
 
-### Real-Time Performance
+* Issue: unstable angle readings
+* Cause: magnet misalignment
+* Fix: adjust alignment and maintain 1–3 mm gap
 
-* Loop designed for continuous real-time execution
+---
+
+### Real-Time Performance / 实时性
+
+* Continuous loop ensures real-time response
 * Serial communication optimized to avoid blocking
 
 ---
 
-## File Location
+## File Location / 文件位置
 
-Main firmware file:
-
-```bash id="fw_path"
+```bash
 arduino_main/arduino_main.ino
 ```
 
 ---
 
-## Future Improvements
+## Future Work / 后续优化
 
 * Refactor into modular `.h/.cpp` structure
 * Implement interrupt-based encoder decoding
 * Improve control strategy (e.g., impedance control)
-* Add filtering for sensor noise reduction
+* Add filtering for noise reduction
 
-
-# 固件（Firmware）
-
-## 项目简介
-
-本固件运行在 Arduino 微控制器上，负责触觉设备的实时数据采集、状态计算以及力反馈控制。
-
-系统通过读取连杆上的增量式编码器和夹爪上的 AS5600 磁编码器，获取用户输入的运动信息，并通过串口与上位机（或仿真环境）通信，最终驱动直流电机输出力反馈，实现硬件在环交互。
-
----
-
-## 系统架构
-
-虽然代码目前以单个 `.ino` 文件实现，但在逻辑上划分为以下模块：
-
-* **传感层（Sensing Layer）**
-
-  * 读取 3806 增量式编码器信号（关节角度）
-  * 读取 AS5600 磁编码器（夹爪角度）
-
-* **状态处理（State Processing）**
-
-  * 将编码器计数转换为角度
-  * 计算系统状态（关节角度与夹爪角度）
-
-* **通信模块（Communication）**
-
-  * 通过串口发送实时数据
-  * 接收来自仿真环境的控制参数（如接触阈值、刚度）
-
-* **控制模块（Control）**
-
-  * 计算力反馈输出
-  * 通过 PWM 驱动电机
-
----
-
-## 主循环结构
-
-固件采用结构化的循环流程：
-
-```cpp id="loop_cn"
-void loop() {
-    readEncoders();
-    readGripper();
-    computeState();
-    sendData();
-    receiveCommand();
-    controlMotor();
-}
-```
-
-该结构实现了“传感 → 处理 → 通信 → 控制”的清晰分层，便于维护和扩展。
-
----
-
-## 硬件接口
-
-### 增量式编码器（3806）
-
-* 正交信号（A/B 相）
-* 用于关节角度测量
-* 提供高分辨率相对位移信息
-
----
-
-### AS5600 磁编码器
-
-* 通过 I2C（SDA / SCL）通信
-* 输出 0–360° 绝对角度
-* 用于夹爪角度测量
-
----
-
-### 电机驱动
-
-* 使用 PWM 控制输出力矩
-* 通过数字引脚控制转动方向
-
----
-
-## 串口通信
-
-### 输出（Arduino → 上位机）
-
-数据格式：
-
-```id="serial_cn"
-< x, y, alpha >
-```
-
-* `x, y`：末端位置（或由关节计算得到）
-* `alpha`：夹爪角度
-
----
-
-### 输入（上位机 → Arduino）
-
-* 接触阈值（contact threshold）
-* 虚拟刚度参数（stiffness）
-
-用于生成力反馈控制信号。
-
----
-
-## 控制逻辑
-
-系统采用简单的虚拟墙模型实现力反馈：
-
-```cpp id="control_cn"
-float error = contact_angle - alpha;
-float torque = k * error;
-```
-
-根据误差计算输出力矩，并转换为 PWM 信号驱动电机。
-
----
-
-## 关键工程问题
-
-### 编码器漂移问题
-
-* 问题：系统无法稳定回到零位
-* 原因：编码器固定不牢
-* 解决：使用螺丝固定，消除误差
-
----
-
-### AS5600 对齐问题
-
-* 问题：角度测量不稳定
-* 原因：磁铁与传感器未对齐
-* 解决：调整轴向位置并控制间距（1–3 mm）
-
----
-
-### 实时性问题
-
-* 采用连续循环结构保证实时执行
-* 串口通信避免阻塞，提高响应速度
-
----
-
-## 文件位置
-
-主程序文件：
-
-```bash id="fw_cn_path"
-arduino_main/arduino_main.ino
-```
-
----
-
-## 后续优化方向
-
-* 将代码拆分为 `.h/.cpp` 模块化结构
-* 使用中断方式提升编码器读取精度
-* 引入更高级控制策略（如阻抗控制）
-* 增加滤波算法降低噪声影响
+后续可优化为模块化结构，并引入更高级控制与滤波方法。
