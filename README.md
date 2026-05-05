@@ -92,6 +92,24 @@ See `/control` for details.
 ## Hardware-Software Interface
 
 The system communicates with an external simulation via serial:
+## System Overview
+
+```mermaid
+flowchart LR
+
+A[User Input] --> B[2-DOF Linkage]
+B --> C[Encoders 3806]
+C --> D[Arduino Firmware]
+
+D -->|Serial Data| E[Simulation / Virtual Environment]
+E --> F[Force Computation<br/>(Virtual Wall)]
+
+F -->|Control Signal| D
+
+D --> G[Motor Driver]
+G --> H[Gripper Handle<br/>(AS5600 + Motor)]
+
+H -->|Force Feedback| A
 
 **Output (Arduino → Simulation):**
 
