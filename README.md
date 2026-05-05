@@ -121,10 +121,8 @@ This enables real-time hardware-in-the-loop interaction.
 ```bash
 hardware/      # CAD, drawings, electronics
 firmware/      # Arduino code
-control/       # kinematics and haptic models
 experiments/   # testing and observations
 docs/          # report and figures
-interface/     # communication protocol
 ```
 
 ---
@@ -270,10 +268,8 @@ Arduino程序实现以下功能：
 ```bash
 hardware/      # 机械设计、CAD模型与电路连接
 firmware/      # Arduino嵌入式控制代码
-control/       # 运动学建模与力反馈算法
 experiments/   # 测试记录、标定与调试过程
 docs/          # 报告、图片与说明文档
-interface/     # 串口通信协议说明
 ```
 
 ---
